@@ -38,6 +38,7 @@ It helps you answer:
 - boto3
 - django-tailwind
 - SQLite (default local DB)
+- PostgreSQL (Docker Compose sidecar)
 
 ## Project Structure
 
@@ -72,6 +73,14 @@ DJANGO_SECRET_KEY=change-me
 DJANGO_DEBUG=True
 DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
 
+# Database config
+DB_ENGINE=sqlite
+POSTGRES_DB=aws_explore
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_HOST=127.0.0.1
+POSTGRES_PORT=5455
+
 AWS_PROFILE=default
 AWS_REGION=us-east-1
 
@@ -85,6 +94,9 @@ Notes:
 
 - If `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are set, they are preferred.
 - Otherwise boto3 default credential chain/profile is used.
+- Database mode:
+  - `DB_ENGINE=sqlite` for local default
+  - `DB_ENGINE=postgres` for PostgreSQL
 - Never commit real credentials to git.
 
 ## Local Setup
@@ -137,6 +149,49 @@ npm run build
 cd /Users/akash/vscodeprojects/aws-explore
 python manage.py runserver
 ```
+
+## Docker
+
+This repository includes:
+
+- `/Users/akash/vscodeprojects/aws-explore/Dockerfile`
+- `/Users/akash/vscodeprojects/aws-explore/docker-compose.yml`
+
+The Docker image:
+
+- Builds Tailwind CSS in a Node build stage.
+- Runs Django in a Python runtime stage.
+- Applies migrations and `collectstatic` on startup.
+- Starts Gunicorn (not Django dev server) on port `8000`.
+
+The Docker Compose stack includes:
+
+- `web` (Django app)
+- `db` (PostgreSQL sidecar, `postgres:16-alpine`)
+
+### Run with Docker Compose
+
+1. Ensure `.env.local` exists (copy from `.env.example` if needed).
+2. Build and start:
+
+```bash
+cd /Users/akash/vscodeprojects/aws-explore
+docker compose up --build
+```
+
+Open: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+
+### Stop
+
+```bash
+cd /Users/akash/vscodeprojects/aws-explore
+docker compose down
+```
+
+Note:
+
+- Compose runs Django with `DB_ENGINE=postgres`.
+- Postgres data is persisted in the named volume `postgres_data`.
 
 ## How to Read Dashboard Data
 
@@ -200,6 +255,33 @@ python manage.py check
 python manage.py migrate
 python manage.py runserver
 ```
+
+## Future Development Notes
+
+### Not Implemented Yet
+
+- Scanner coverage for services beyond EC2 (for example S3, RDS, Lambda, ECS, EKS, ELB).
+- Daily/weekly cost trend charts (currently focused on MTD aggregates).
+- Budget/anomaly alerting and threshold notifications.
+- Auth/RBAC for multi-user access and account-level permissions.
+- Export/reporting (CSV/PDF or scheduled summaries).
+
+### Planned Next
+
+- Add scanner modules for top billed services first (S3, RDS, Lambda).
+- Add time-series view with Cost Explorer daily granularity.
+- Add service-level drilldown page with usage-by-unit breakdown.
+- Improve error observability for scanner failures and AWS API permission gaps.
+- Add tests for scanner aggregation and dashboard filtering/sorting logic.
+
+### Good To Have
+
+- Multi-account support (AWS Organizations / assume-role workflows).
+- Cost optimization recommendations (idle resources, rightsizing hints).
+- Tag-based cost slicing (team, environment, project).
+- Caching layer for Cost Explorer responses to reduce API latency/cost.
+- Background jobs for periodic scans instead of request-time scanning.
+- CI pipeline with lint/test/build and container image publish.
 
 ## License
 
