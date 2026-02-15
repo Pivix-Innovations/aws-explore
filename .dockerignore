@@ -1,0 +1,17 @@
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.log
+.env
+.env.local
+node_modules
+theme/static_src/node_modules
+theme/static/css/dist
+dist
+build
+.DS_Store
