@@ -200,3 +200,8 @@ python manage.py check
 python manage.py migrate
 python manage.py runserver
 ```
+
+## License
+
+This project is licensed under the Apache License 2.0.
+See `/Users/akash/vscodeprojects/aws-explore/LICENSE`.
